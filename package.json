@@ -1,0 +1,9 @@
+{
+  "name": "test-kafka",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "kafka-node": "^4.1.3"
+  }
+}
