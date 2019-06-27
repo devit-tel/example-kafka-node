@@ -1,18 +1,17 @@
 const Kafka = require("node-rdkafka");
-const config = require("../config");
 
 // doc https://github.com/edenhill/librdkafka/blob/0.11.1.x/CONFIGURATION.md
 const producer = new Kafka.Producer({
-  'client.id': 'example-kafka',
-  'metadata.broker.list': 'localhost:9092',
-  'compression.codec': 'snappy',
-  'retry.backoff.ms': 100,
-  'message.send.max.retries': 10,
-  'socket.keepalive.enable': true,
-  'queue.buffering.max.messages': 100000,
-  'queue.buffering.max.ms': 1000,
-  'batch.num.messages': 1000000,
-  'dr_cb': true
+  "client.id": "example-kafka",
+  "metadata.broker.list": "localhost:9092",
+  "compression.codec": "snappy",
+  "retry.backoff.ms": 100,
+  "message.send.max.retries": 10,
+  "socket.keepalive.enable": true,
+  "queue.buffering.max.messages": 100000,
+  "queue.buffering.max.ms": 1000,
+  "batch.num.messages": 1000000,
+  dr_cb: true
 });
 
 producer.connect();
@@ -725,18 +724,24 @@ producer.on("ready", () => {
   transactions.map(transaction => {
     try {
       producer.produce(
-        'topic2',
+        "topic2",
         null,
         Buffer.from(JSON.stringify(transaction)),
         transaction.accountId,
-        Date.now(),
+        Date.now()
       );
-      console.log(`sent ${JSON.stringify(transaction)}`)
+      console.log(`sent ${JSON.stringify(transaction)}`);
     } catch (err) {
-      console.error('A problem occurred when sending our message');
+      console.error("A problem occurred when sending our message");
       console.error(err);
     }
-  })
+  });
+  producer.flush(10000, error => {
+    if (error) {
+      console.log(error);
+    }
+    process.exit(0);
+  });
 });
 
 producer.on("error", console.error);
