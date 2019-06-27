@@ -7,7 +7,8 @@ const KAFKA_CONFIG = {
 const EXAMPLES = {
   '0': '00-create-topic',
   '1': '01-simple-producer',
-  '2': '02-simple-producer-with-message-key'
+  '2': '02-simple-producer-with-message-key',
+  '3': '03-simple-consumer'
 }
 
 program

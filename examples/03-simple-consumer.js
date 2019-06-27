@@ -1,43 +1,43 @@
 const Kafka = require("node-rdkafka");
 
-// doc https://github.com/edenhill/librdkafka/blob/0.11.1.x/CONFIGURATION.md
-const producer = new Kafka.Producer({
-  'client.id': 'example-kafka',
-  'metadata.broker.list': 'localhost:9092',
-  'compression.codec': 'snappy',
-  'retry.backoff.ms': 100,
-  'message.send.max.retries': 10,
-  'socket.keepalive.enable': true,
-  'queue.buffering.max.messages': 100000,
-  'queue.buffering.max.ms': 1000,
-  'batch.num.messages': 1000000,
-  'dr_cb': true
-});
-
-producer.connect();
-
-producer.on("ready", () => {
-  console.log("producer.on('ready')");
-  transactions.map(transaction => {
-    try {
-      producer.produce(
-        'topic2',
-        null,
-        Buffer.from(JSON.stringify(transaction)),
-        transaction.accountId,
-        Date.now(),
-      );
-      console.log(`sent ${JSON.stringify(transaction)}`)
-    } catch (err) {
-      console.error('A problem occurred when sending our message');
+// https://kafka.apache.org/documentation/#consumerconfigs
+const consumer = new Kafka.KafkaConsumer({
+  "metadata.broker.list": "localhost:9092",
+  "group.id": "sample-service-1",
+  "enable.auto.commit": false,
+  offset_commit_cb: function(err, topicPartitions) {
+    if (err) {
+      // There was an error committing
       console.error(err);
+    } else {
+      // Commit went through. Let's log the topic partitions
+      console.log(topicPartitions);
+    }
+  }
+}, {});
+
+consumer.connect();
+
+const poll = consumer => {
+  consumer.consume(100, (error, messages) => {
+    try {
+      console.log('consuming', error, messages)
+      if (messages.length) {
+        consumer.commitSync()
+      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setImmediate(() => poll(consumer))
     }
   })
-});
+}
 
-producer.on("error", console.error);
+consumer
+  .on("ready", () => {
+    console.log("consumer.on('ready')");
+    consumer.subscribe(["topic1"]);
+    poll(consumer)
+  })
 
-// SELECT *
-// FROM topic2
-// WHERE accountId="account1"
-// LIMIT 200
+consumer.on("error", console.error);
