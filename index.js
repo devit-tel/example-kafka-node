@@ -9,7 +9,9 @@ const EXAMPLES = {
   '1': '01-simple-producer',
   '2': '02-simple-producer-with-message-key',
   '3': '03-simple-consumer',
-  '4': '04-simple-consumer-bank-transaction'
+  '4': '04-simple-consumer-bank-transaction',
+  '5': '05-stream-producer',
+  '6': '06-stream-consumer'
 }
 
 program
