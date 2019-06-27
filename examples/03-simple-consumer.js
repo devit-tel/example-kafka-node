@@ -1,21 +1,15 @@
-const Kafka = require("node-rdkafka");
+const kafka = require("kafka-node");
 const config = require("../config");
+const client = new kafka.KafkaClient(config.kafkaClient);
 
-// doc https://github.com/edenhill/librdkafka/blob/0.11.1.x/CONFIGURATION.md
-const producer = new Kafka.Producer({
-  'client.id': 'example-kafka',
-  'metadata.broker.list': 'localhost:9092',
-  'compression.codec': 'snappy',
-  'retry.backoff.ms': 100,
-  'message.send.max.retries': 10,
-  'socket.keepalive.enable': true,
-  'queue.buffering.max.messages': 100000,
-  'queue.buffering.max.ms': 1000,
-  'batch.num.messages': 1000000,
-  'dr_cb': true
+const producer = new kafka.Consumer(client, {
+  // Configuration for when to consider a message as acknowledged, default 1
+  requireAcks: 1,
+  // The amount of time in milliseconds to wait for all acks before considered, default 100ms
+  ackTimeoutMs: 100,
+  // Partitioner type (default = 0, random = 1, cyclic = 2, keyed = 3, custom = 4), default 0
+  partitionerType: 3
 });
-
-producer.connect();
 
 const transactions = [
   {
@@ -722,21 +716,14 @@ const transactions = [
 
 producer.on("ready", () => {
   console.log("producer.on('ready')");
-  transactions.map(transaction => {
-    try {
-      producer.produce(
-        'topic2',
-        null,
-        Buffer.from(JSON.stringify(transaction)),
-        transaction.accountId,
-        Date.now(),
-      );
-      console.log(`sent ${JSON.stringify(transaction)}`)
-    } catch (err) {
-      console.error('A problem occurred when sending our message');
-      console.error(err);
-    }
-  })
+  const payloads = transactions.map(transaction => ({
+    topic: `topic2`,
+    messages: JSON.stringify(transaction),
+    key: transaction.accountId
+  }));
+  producer.send(payloads, (err, data) => {
+    console.log(err, data);
+  });
 });
 
 producer.on("error", console.error);

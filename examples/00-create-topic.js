@@ -1,10 +1,22 @@
-const config = require("../config");
+const Kafka = require("node-rdkafka");
 
-console.log(`Open web browser and go to http://${config.kafkaClient.kafkaHost.replace('9092', '3030')}`)
-console.log('Login with')
-console.log('username: admin')
-console.log('password: admin')
+// doc https://github.com/edenhill/librdkafka/blob/0.11.1.x/CONFIGURATION.md
+const client = Kafka.AdminClient.create({
+  'client.id': 'example-kafka',
+  'metadata.broker.list': 'localhost:9092',
+});
 
-console.log('create topics below')
-console.log(`topic_name: "topic1", partition: 3, replication: 1, key: String, value: String`)
-console.log(`topic_name: "topic2", partition: 3, replication: 1, key: String, value: JSON`)
+
+const createTopic = (topic, num_partitions) => new Promise((resolve, reject) => {
+  client.createTopic({
+    topic,
+    num_partitions,
+    replication_factor: 1
+  }, function(err) {
+    return err ? reject(err): resolve()
+  });
+})
+
+
+createTopic('topic1', 3).then(() => console.log('created topic1'))
+createTopic('topic2', 3).then(() => console.log('created topic2'))

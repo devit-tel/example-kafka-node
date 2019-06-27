@@ -1,15 +1,21 @@
-const kafka = require("kafka-node");
+const Kafka = require("node-rdkafka");
 const config = require("../config");
-const client = new kafka.KafkaClient(config.kafkaClient);
 
-const producer = new kafka.Producer(client, {
-  // Configuration for when to consider a message as acknowledged, default 1
-  requireAcks: 1,
-  // The amount of time in milliseconds to wait for all acks before considered, default 100ms
-  ackTimeoutMs: 100,
-  // Partitioner type (default = 0, random = 1, cyclic = 2, keyed = 3, custom = 4), default 0
-  partitionerType: 2
+// doc https://github.com/edenhill/librdkafka/blob/0.11.1.x/CONFIGURATION.md
+const producer = new Kafka.Producer({
+  'client.id': 'example-kafka',
+  'metadata.broker.list': 'localhost:9092',
+  'compression.codec': 'snappy',
+  'retry.backoff.ms': 100,
+  'message.send.max.retries': 10,
+  'socket.keepalive.enable': true,
+  'queue.buffering.max.messages': 100000,
+  'queue.buffering.max.ms': 1000,
+  'batch.num.messages': 1000000,
+  'dr_cb': true
 });
+
+producer.connect();
 
 const randomQuotes = [
   `"Don't eat me. I have a wife and kids. Eat them."`,
@@ -35,15 +41,21 @@ const randomQuotes = [
 
 producer.on("ready", () => {
   console.log("producer.on('ready')");
-  const payloads = new Array(100)
-    .fill()
-    .map((value, key) => ({
-      topic: `topic1`,
-      messages: randomQuotes[key % randomQuotes.length]
-    }));
-  producer.send(payloads, (err, data) => {
-    console.log(data);
-  });
+  for (let i = 0; i < 100; i++) {
+    try {
+      producer.produce(
+        'topic1',
+        null,
+        Buffer.from(randomQuotes[i % randomQuotes.length]),
+        undefined,
+        Date.now(),
+      );
+      console.log(`sent ${i}`)
+    } catch (err) {
+      console.error('A problem occurred when sending our message');
+      console.error(err);
+    }
+  }
 });
 
 producer.on("error", console.error);
