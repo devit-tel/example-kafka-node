@@ -5,12 +5,13 @@ const KAFKA_CONFIG = {
 }
 
 const EXAMPLES = {
+  '0': '00-create-topic',
   '1': '01-simple-producer'
 }
 
 program
   .version('0.0.1')
-  .option('-e [number], --example [number]', 'Example nummber', '1')
+  .option('-e, --example <number>', 'Example nummber', '0')
   .parse(process.argv);
 
 require(`./examples/${EXAMPLES[program.example]}`)
