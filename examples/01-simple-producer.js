@@ -38,7 +38,7 @@ producer.on("ready", () => {
   const payloads = new Array(100)
     .fill()
     .map((value, key) => ({
-      topic: `${config.hostname}_topic1`,
+      topic: `topic1`,
       messages: randomQuotes[key % randomQuotes.length]
     }));
   producer.send(payloads, (err, data) => {
