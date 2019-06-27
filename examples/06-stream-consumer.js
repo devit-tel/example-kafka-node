@@ -1,6 +1,5 @@
 const Kafka = require("node-rdkafka");
 const { createWriteStream } = require("fs");
-const os = require
 
 const consumerStream = new Kafka.createReadStream(
   {
