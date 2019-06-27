@@ -22,6 +22,7 @@ const producerStream = new Kafka.createWriteStream(
 const fileStream = createWriteStream("./topic3_bak.txt");
 
 consumerStream.on('data', data => {
+  // You can transform data before send to another stream
   fileStream.write(data.value)
   if (data.topic === 'topic3' && /(1$)|(7$)|(9$)/.test(data.value.toString())) {
     producerStream.write(data.value)
