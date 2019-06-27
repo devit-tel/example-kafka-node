@@ -24,7 +24,7 @@ var consumerGroup = new kafka.ConsumerGroup(
       console.log(isAlreadyMember);
       callback();
     }, // or null
-    autoCommit: true
+    autoCommit: false
   },
   ["my_topic"]
 );
