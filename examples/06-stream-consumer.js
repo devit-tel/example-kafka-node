@@ -26,6 +26,8 @@ consumerStream.on('data', data => {
   fileStream.write(data.value)
   if (data.topic === 'topic3' && /(1$)|(7$)|(9$)/.test(data.value.toString())) {
     producerStream.write(data.value)
+  } else {
+    process.stdout.write(data.value)
   }
 })
 
