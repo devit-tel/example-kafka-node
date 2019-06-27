@@ -26,6 +26,7 @@ const poll = consumer => {
         consumer.commitSync()
       }
     } catch (error) {
+      // Do some recovery, or send to dead letter
       console.log(error)
     } finally {
       setImmediate(() => poll(consumer))
